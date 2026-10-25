@@ -649,6 +649,7 @@ export async function getDashboardSummary() {
     unresolvedOverlaps: stats.unresolved_overlaps,
     resolutionRate: stats.resolution_rate,
     activeInstitutionsCount: stats.total_institutions,
+    awaitingAssignmentCases: stats.awaiting_assignment_cases ?? 0,
   }
 }
 

@@ -727,6 +727,19 @@ def get_dashboard_statistics(db: Session) -> Dict[str, Any]:
         or 0
     )
 
+    awaiting_assignment_cases = (
+        db.query(func.count(models.ComplaintCase.id))
+        .filter(
+            or_(
+                models.ComplaintCase.assigned_officer == None,
+                models.ComplaintCase.assigned_officer == "",
+                models.ComplaintCase.assigned_officer.like("%Unassigned%"),
+            )
+        )
+        .scalar()
+        or 0
+    )
+
     res_rate = round((disposed_cases / total_cases * 100), 1) if total_cases > 0 else 0.0
 
     return {
@@ -739,6 +752,7 @@ def get_dashboard_statistics(db: Session) -> Dict[str, Any]:
         "unresolved_overlaps": unresolved_overlaps,
         "total_institutions": total_institutions,
         "resolution_rate": res_rate,
+        "awaiting_assignment_cases": awaiting_assignment_cases,
     }
 
 

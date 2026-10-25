@@ -28,13 +28,17 @@ export const MOCK_CATEGORIES = [
 ];
 
 export const MOCK_STATUSES = [
-  'Pending',
+  'Submitted',
+  'Under Review',
   'Assigned',
+  'In Progress',
+  'Awaiting Information',
   'In Investigation',
   'Hearing Scheduled',
   'Action Initiated',
-  'Resolved',
+  'Pending',
   'Transferred',
+  'Resolved',
   'Closed',
 ];
 

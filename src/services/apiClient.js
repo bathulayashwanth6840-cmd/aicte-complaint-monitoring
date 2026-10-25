@@ -5,7 +5,8 @@
  */
 
 export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api'
+  import.meta.env.VITE_API_BASE_URL ||
+  'https://aicte-complaint-monitoring.onrender.com/api'
 
 export function buildQueryString(params = {}) {
   const query = new URLSearchParams()

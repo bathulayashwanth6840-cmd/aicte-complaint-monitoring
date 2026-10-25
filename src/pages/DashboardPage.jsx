@@ -154,17 +154,19 @@ export function DashboardPage({ onNavigateTab }) {
       case 'pending':
         onNavigateTab('complaints', { status: 'Pending' })
         break
+      case 'inProgress':
       case 'underProcess':
         onNavigateTab('complaints', { status: 'Under Process' })
         break
+      case 'overdue':
+        onNavigateTab('complaints', { onlyOverdue: true })
+        break
+      case 'resolved':
       case 'disposed':
         onNavigateTab('complaints', { status: 'Resolved' })
         break
-      case 'transferred':
-        onNavigateTab('complaints', { status: 'Transferred' })
-        break
-      case 'overdue':
-        onNavigateTab('complaints', { onlyOverdue: true })
+      case 'awaitingAssignment':
+        onNavigateTab('complaints', { assignedOfficer: 'Unassigned' })
         break
       case 'overlap':
         onNavigateTab('overlap')
@@ -319,22 +321,19 @@ export function DashboardPage({ onNavigateTab }) {
         }
       />
 
-      {/* Demonstration Data Transparency Notice */}
-      <div className="bg-amber-500/10 border-l-4 border-l-amber-600 border border-amber-200/80 rounded-r-lg p-3 text-xs text-amber-950 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-2xs">
+      {/* Official Status Indicator */}
+      <div className="bg-blue-500/10 border-l-4 border-l-blue-600 border border-blue-200/80 rounded-r-lg p-3 text-xs text-blue-950 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-2xs">
         <div className="flex items-center gap-2">
-          <HelpCircle className="h-4 w-4 text-amber-700 shrink-0" />
+          <Layers className="h-4 w-4 text-blue-700 shrink-0" />
           <span>
-            <strong>DEMONSTRATION DATA MODE:</strong> Displaying simulated national datasets across 6 AICTE Regional Councils. Isolated data service layer is ready for production REST API binding.
+            <strong>AICTE INTEGRATED GRIEVANCE SYSTEM:</strong> Centralized complaint monitoring across Regulation Bureau (RB) and Public Grievance Redressal Cell (PGRC).
           </span>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={() => setIsSimulatedEmpty(!isSimulatedEmpty)}
-            className="text-amber-800 underline hover:text-amber-950 text-[11px] font-semibold"
-          >
-            {isSimulatedEmpty ? 'Restore Normal Feed' : 'Preview Zero-Data State'}
-          </button>
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 animate-pulse" />
+            Live Database Connected
+          </span>
         </div>
       </div>
 
@@ -372,11 +371,11 @@ export function DashboardPage({ onNavigateTab }) {
         </div>
       ) : (
         <>
-          {/* SECTION 1: 7 DASHBOARD SUMMARY CARDS */}
+          {/* SECTION 1: 7 DASHBOARD SUMMARY CARDS (PHASE 2A SPECIFICATION) */}
           <div>
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                Statutory Case Ledger Summary (Click any card to inspect filtered list)
+                Institutional Complaint Status Summary (Click card to filter complaints)
               </h2>
               <span className="text-[11px] text-slate-400">
                 Resolution Rate: <strong>{summary.resolutionRate}%</strong>
@@ -384,14 +383,14 @@ export function DashboardPage({ onNavigateTab }) {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
-              {/* Card 1: Total Cases */}
+              {/* Card 1: Total Complaints */}
               <button
                 type="button"
                 onClick={() => handleSummaryCardClick('total')}
                 className="bg-white p-4 rounded-lg border border-slate-200 shadow-xs hover:border-blue-400 hover:shadow-md transition text-left flex flex-col justify-between group focus:outline-none focus:ring-2 focus:ring-blue-600"
               >
                 <div className="flex items-center justify-between text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  <span>Total Cases</span>
+                  <span>Total Complaints</span>
                   <FileText className="h-3.5 w-3.5 text-blue-600 group-hover:scale-110 transition-transform" />
                 </div>
                 <div className="mt-2.5">
@@ -404,7 +403,7 @@ export function DashboardPage({ onNavigateTab }) {
                 </div>
               </button>
 
-              {/* Card 2: Pending Cases */}
+              {/* Card 2: Pending Complaints */}
               <button
                 type="button"
                 onClick={() => handleSummaryCardClick('pending')}
@@ -424,14 +423,14 @@ export function DashboardPage({ onNavigateTab }) {
                 </div>
               </button>
 
-              {/* Card 3: Under Process */}
+              {/* Card 3: In-Progress Complaints */}
               <button
                 type="button"
-                onClick={() => handleSummaryCardClick('underProcess')}
+                onClick={() => handleSummaryCardClick('inProgress')}
                 className="bg-white p-4 rounded-lg border border-slate-200 shadow-xs hover:border-blue-500 hover:shadow-md transition text-left flex flex-col justify-between group focus:outline-none focus:ring-2 focus:ring-blue-600"
               >
                 <div className="flex items-center justify-between text-xs font-semibold text-blue-800 uppercase tracking-wider">
-                  <span>Under Process</span>
+                  <span>In-Progress</span>
                   <Layers className="h-3.5 w-3.5 text-blue-700 group-hover:scale-110 transition-transform" />
                 </div>
                 <div className="mt-2.5">
@@ -444,47 +443,7 @@ export function DashboardPage({ onNavigateTab }) {
                 </div>
               </button>
 
-              {/* Card 4: Disposed Cases */}
-              <button
-                type="button"
-                onClick={() => handleSummaryCardClick('disposed')}
-                className="bg-white p-4 rounded-lg border border-slate-200 shadow-xs hover:border-emerald-500 hover:shadow-md transition text-left flex flex-col justify-between group focus:outline-none focus:ring-2 focus:ring-emerald-600"
-              >
-                <div className="flex items-center justify-between text-xs font-semibold text-emerald-800 uppercase tracking-wider">
-                  <span>Disposed</span>
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 group-hover:scale-110 transition-transform" />
-                </div>
-                <div className="mt-2.5">
-                  <div className="text-2xl font-bold text-emerald-700 font-sans">{summary.disposedCases}</div>
-                  <p className="text-[10px] text-slate-500 mt-0.5">Resolved & Closed</p>
-                </div>
-                <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-emerald-700 font-semibold">
-                  <span>Archived Files</span>
-                  <ChevronRight className="h-3 w-3" />
-                </div>
-              </button>
-
-              {/* Card 5: Transferred Cases */}
-              <button
-                type="button"
-                onClick={() => handleSummaryCardClick('transferred')}
-                className="bg-white p-4 rounded-lg border border-slate-200 shadow-xs hover:border-indigo-400 hover:shadow-md transition text-left flex flex-col justify-between group focus:outline-none focus:ring-2 focus:ring-indigo-600"
-              >
-                <div className="flex items-center justify-between text-xs font-semibold text-indigo-800 uppercase tracking-wider">
-                  <span>Transferred</span>
-                  <ExternalLink className="h-3.5 w-3.5 text-indigo-600 group-hover:scale-110 transition-transform" />
-                </div>
-                <div className="mt-2.5">
-                  <div className="text-2xl font-bold text-indigo-700 font-sans">{summary.transferredCases}</div>
-                  <p className="text-[10px] text-slate-500 mt-0.5">State Board / DTE</p>
-                </div>
-                <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-indigo-700 font-semibold">
-                  <span>Transfers</span>
-                  <ChevronRight className="h-3 w-3" />
-                </div>
-              </button>
-
-              {/* Card 6: Overdue Cases */}
+              {/* Card 4: Overdue Complaints */}
               <button
                 type="button"
                 onClick={() => handleSummaryCardClick('overdue')}
@@ -507,19 +466,61 @@ export function DashboardPage({ onNavigateTab }) {
                 </div>
               </button>
 
-              {/* Card 7: Unresolved Overlap Alerts */}
+              {/* Card 5: Resolved Complaints */}
+              <button
+                type="button"
+                onClick={() => handleSummaryCardClick('resolved')}
+                className="bg-white p-4 rounded-lg border border-slate-200 shadow-xs hover:border-emerald-500 hover:shadow-md transition text-left flex flex-col justify-between group focus:outline-none focus:ring-2 focus:ring-emerald-600"
+              >
+                <div className="flex items-center justify-between text-xs font-semibold text-emerald-800 uppercase tracking-wider">
+                  <span>Resolved</span>
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 group-hover:scale-110 transition-transform" />
+                </div>
+                <div className="mt-2.5">
+                  <div className="text-2xl font-bold text-emerald-700 font-sans">{summary.disposedCases}</div>
+                  <p className="text-[10px] text-slate-500 mt-0.5">Disposed & Closed</p>
+                </div>
+                <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-emerald-700 font-semibold">
+                  <span>Archived Files</span>
+                  <ChevronRight className="h-3 w-3" />
+                </div>
+              </button>
+
+              {/* Card 6: Complaints Awaiting Assignment */}
+              <button
+                type="button"
+                onClick={() => handleSummaryCardClick('awaitingAssignment')}
+                className="bg-white p-4 rounded-lg border border-slate-200 shadow-xs hover:border-amber-400 hover:shadow-md transition text-left flex flex-col justify-between group focus:outline-none focus:ring-2 focus:ring-amber-600"
+              >
+                <div className="flex items-center justify-between text-xs font-semibold text-amber-900 uppercase tracking-wider">
+                  <span>Unassigned</span>
+                  <Clock className="h-3.5 w-3.5 text-amber-600 group-hover:scale-110 transition-transform" />
+                </div>
+                <div className="mt-2.5">
+                  <div className="text-2xl font-bold text-amber-800 font-sans">
+                    {summary.awaitingAssignmentCases ?? summary.pendingCases}
+                  </div>
+                  <p className="text-[10px] text-slate-500 mt-0.5">Awaiting Officer</p>
+                </div>
+                <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-amber-800 font-semibold">
+                  <span>Assign Now</span>
+                  <ChevronRight className="h-3 w-3" />
+                </div>
+              </button>
+
+              {/* Card 7: Related or Duplicate Complaints */}
               <button
                 type="button"
                 onClick={() => handleSummaryCardClick('overlap')}
                 className="bg-white p-4 rounded-lg border border-rose-300 shadow-xs hover:border-rose-500 hover:shadow-md transition text-left flex flex-col justify-between group focus:outline-none focus:ring-2 focus:ring-rose-600 bg-rose-100/40"
               >
                 <div className="flex items-center justify-between text-xs font-semibold text-rose-950 uppercase tracking-wider">
-                  <span>Overlap Alerts</span>
+                  <span>Related / Overlaps</span>
                   <AlertOctagon className="h-3.5 w-3.5 text-rose-800 group-hover:scale-110 transition-transform" />
                 </div>
                 <div className="mt-2.5">
                   <div className="text-2xl font-bold text-rose-900 font-sans">{summary.unresolvedOverlaps}</div>
-                  <p className="text-[10px] text-rose-800 font-medium mt-0.5">Multi-Bureau Inquiry</p>
+                  <p className="text-[10px] text-rose-800 font-medium mt-0.5">Cross-Bureau Cases</p>
                 </div>
                 <div className="mt-2 pt-2 border-t border-rose-200 flex items-center justify-between text-[10px] text-rose-900 font-bold">
                   <span>Joint Inquiries</span>

@@ -255,6 +255,7 @@ class DashboardStatsResponse(BaseModel):
     unresolved_overlaps: int
     total_institutions: int
     resolution_rate: float
+    awaiting_assignment_cases: int = 0
 
 
 class BureauWorkloadItem(BaseModel):

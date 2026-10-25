@@ -74,6 +74,19 @@ export function ComplaintsPage({ onNavigateTab, initialFilter = null }) {
   const [totalCases, setTotalCases] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [registeredInstitutions, setRegisteredInstitutions] = useState(MOCK_INSTITUTIONS)
+
+  // Fetch registered institutions dynamically from central API
+  useEffect(() => {
+    dataService
+      .getInstitutions({ pageSize: 100 })
+      .then((res) => {
+        if (res && res.data && res.data.length > 0) {
+          setRegisteredInstitutions(res.data)
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   // Handle incoming initialFilter prop from Dashboard cards / charts
   useEffect(() => {
@@ -83,6 +96,8 @@ export function ComplaintsPage({ onNavigateTab, initialFilter = null }) {
       if (initialFilter.institution !== undefined) setInstitutionFilter(initialFilter.institution)
       if (initialFilter.onlyOverdue !== undefined) setOnlyOverdue(Boolean(initialFilter.onlyOverdue))
       if (initialFilter.search !== undefined) setSearch(initialFilter.search)
+      if (initialFilter.hasOverlap !== undefined) setOverlapFilter(initialFilter.hasOverlap)
+      if (initialFilter.assignedOfficer !== undefined) setSearch(initialFilter.assignedOfficer)
       setCurrentPage(1)
     }
   }, [initialFilter])
@@ -185,7 +200,7 @@ export function ComplaintsPage({ onNavigateTab, initialFilter = null }) {
 
     setIsSubmittingCreate(true)
     try {
-      const selectedInst = MOCK_INSTITUTIONS.find((i) => i.pid === createForm.institutionPid)
+      const selectedInst = registeredInstitutions.find((i) => i.pid === createForm.institutionPid)
       const created = await dataService.createComplaint({
         ...createForm,
         institutionName: selectedInst ? selectedInst.name : createForm.institutionName,
@@ -195,8 +210,8 @@ export function ComplaintsPage({ onNavigateTab, initialFilter = null }) {
 
       setIsCreateModalOpen(false)
       setCreateForm({
-        institutionPid: MOCK_INSTITUTIONS[0]?.pid || '1-43289011',
-        institutionName: MOCK_INSTITUTIONS[0]?.name || '',
+        institutionPid: registeredInstitutions[0]?.pid || '1-43289011',
+        institutionName: registeredInstitutions[0]?.name || '',
         category: MOCK_CATEGORIES[0],
         description: '',
         receivedDate: new Date().toISOString().split('T')[0],
@@ -405,7 +420,7 @@ export function ComplaintsPage({ onNavigateTab, initialFilter = null }) {
   // Table Columns Definition (Strictly matching prompt specification)
   const columns = [
     {
-      header: 'Unique Case ID',
+      header: 'Complaint ID',
       accessorKey: 'id',
       width: '135px',
       sortable: true,
@@ -417,7 +432,7 @@ export function ComplaintsPage({ onNavigateTab, initialFilter = null }) {
       ),
     },
     {
-      header: 'Institution',
+      header: 'Institution & Identifier',
       accessorKey: 'institutionName',
       sortable: true,
       sortKey: 'institutionName',
@@ -442,29 +457,15 @@ export function ComplaintsPage({ onNavigateTab, initialFilter = null }) {
       ),
     },
     {
-      header: 'Received Date',
-      accessorKey: 'receivedDate',
-      sortable: true,
-      sortKey: 'receivedDate',
-      cell: (row) => (
-        <span className="text-xs font-mono text-slate-600">
-          {row.receivedDate || row.submissionDate}
-        </span>
-      ),
-    },
-    {
-      header: 'Current Status',
-      accessorKey: 'status',
-      sortable: true,
-      sortKey: 'status',
-      cell: (row) => <Badge variant={row.status}>{row.status}</Badge>,
-    },
-    {
-      header: 'Assigned Bureau / Cell',
+      header: 'Responsible Bureau',
       accessorKey: 'bureauId',
       sortable: true,
       sortKey: 'bureauId',
-      cell: (row) => <Badge variant={row.bureauId}>{row.bureauId}</Badge>,
+      cell: (row) => (
+        <Badge variant={row.bureauId === 'RB' ? 'RB' : 'PGRC'}>
+          {row.bureauId}
+        </Badge>
+      ),
     },
     {
       header: 'Assigned Officer',
@@ -483,16 +484,25 @@ export function ComplaintsPage({ onNavigateTab, initialFilter = null }) {
       cell: (row) => <Badge variant={row.priority}>{row.priority}</Badge>,
     },
     {
-      header: 'Last Action Date',
-      accessorKey: 'lastActionDate',
+      header: 'Current Status',
+      accessorKey: 'status',
+      sortable: true,
+      sortKey: 'status',
+      cell: (row) => <Badge variant={row.status}>{row.status}</Badge>,
+    },
+    {
+      header: 'Submission Date',
+      accessorKey: 'receivedDate',
+      sortable: true,
+      sortKey: 'receivedDate',
       cell: (row) => (
-        <span className="text-xs font-mono text-slate-500">
-          {row.lastActionDate || '—'}
+        <span className="text-xs font-mono text-slate-600">
+          {row.receivedDate || row.submissionDate}
         </span>
       ),
     },
     {
-      header: 'Expected Disposal Date',
+      header: 'Deadline',
       accessorKey: 'expectedDisposalDate',
       sortable: true,
       sortKey: 'expectedDisposalDate',
@@ -510,7 +520,16 @@ export function ComplaintsPage({ onNavigateTab, initialFilter = null }) {
       ),
     },
     {
-      header: 'Overlap Indicator',
+      header: 'Last Updated',
+      accessorKey: 'lastActionDate',
+      cell: (row) => (
+        <span className="text-xs font-mono text-slate-500">
+          {row.lastActionDate || '—'}
+        </span>
+      ),
+    },
+    {
+      header: 'Related Overlap',
       accessorKey: 'hasOverlap',
       align: 'center',
       cell: (row) => (
@@ -530,7 +549,7 @@ export function ComplaintsPage({ onNavigateTab, initialFilter = null }) {
       ),
     },
     {
-      header: 'Action',
+      header: 'Actions',
       accessorKey: 'action',
       align: 'right',
       cell: (row) => (
@@ -628,14 +647,14 @@ export function ComplaintsPage({ onNavigateTab, initialFilter = null }) {
             }}
             options={[
               { value: 'ALL', label: 'All Registered Institutions' },
-              ...MOCK_INSTITUTIONS.map((inst) => ({
+              ...registeredInstitutions.map((inst) => ({
                 value: inst.pid,
                 label: `${inst.name} (${inst.pid})`,
               })),
             ]}
           />
 
-          {/* Bureau/Cell Filter */}
+          {/* Bureau Filter: Emphasizing RB and PGRC */}
           <Select
             value={bureauFilter}
             onChange={(e) => {
@@ -643,8 +662,13 @@ export function ComplaintsPage({ onNavigateTab, initialFilter = null }) {
               setCurrentPage(1)
             }}
             options={[
-              { value: 'ALL', label: 'All Bureaus / Cells' },
-              ...MOCK_BUREAUS.map((b) => ({ value: b.id, label: `${b.code} - ${b.name}` })),
+              { value: 'ALL', label: 'All Bureaus (RB & PGRC)' },
+              { value: 'RB', label: 'RB - Regulation Bureau' },
+              { value: 'PGRC', label: 'PGRC - Public Grievance Redressal Cell' },
+              ...MOCK_BUREAUS.filter((b) => !['RB', 'PGRC'].includes(b.id)).map((b) => ({
+                value: b.id,
+                label: `${b.code} - ${b.name}`,
+              })),
             ]}
           />
 
@@ -674,7 +698,7 @@ export function ComplaintsPage({ onNavigateTab, initialFilter = null }) {
             ]}
           />
 
-          {/* Status Filter */}
+          {/* Status Filter matching Phase 3C workflow */}
           <Select
             value={statusFilter}
             onChange={(e) => {
@@ -683,8 +707,18 @@ export function ComplaintsPage({ onNavigateTab, initialFilter = null }) {
             }}
             options={[
               { value: 'ALL', label: 'All Lifecycle Statuses' },
+              { value: 'Submitted', label: 'Submitted' },
+              { value: 'Under Review', label: 'Under Review' },
+              { value: 'Assigned', label: 'Assigned' },
+              { value: 'In Progress', label: 'In Progress' },
               { value: 'Under Process', label: 'Under Process (All Active Inquiries)' },
-              ...MOCK_STATUSES.map((st) => ({ value: st, label: st })),
+              { value: 'Awaiting Information', label: 'Awaiting Information' },
+              { value: 'Resolved', label: 'Resolved' },
+              { value: 'Closed', label: 'Closed' },
+              { value: 'Pending', label: 'Pending' },
+              { value: 'In Investigation', label: 'In Investigation' },
+              { value: 'Hearing Scheduled', label: 'Hearing Scheduled' },
+              { value: 'Transferred', label: 'Transferred' },
             ]}
           />
 
@@ -843,7 +877,7 @@ export function ComplaintsPage({ onNavigateTab, initialFilter = null }) {
               value={createForm.institutionPid}
               onChange={(e) => {
                 const pid = e.target.value
-                const found = MOCK_INSTITUTIONS.find((i) => i.pid === pid)
+                const found = registeredInstitutions.find((i) => i.pid === pid)
                 setCreateForm((prev) => ({
                   ...prev,
                   institutionPid: pid,
@@ -852,9 +886,9 @@ export function ComplaintsPage({ onNavigateTab, initialFilter = null }) {
               }}
               className="w-full p-2.5 rounded-lg border border-slate-300 text-xs bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600/20"
             >
-              {MOCK_INSTITUTIONS.map((inst) => (
+              {registeredInstitutions.map((inst) => (
                 <option key={inst.pid} value={inst.pid}>
-                  {inst.name} ({inst.pid}) - {inst.state}
+                  {inst.name} ({inst.pid}) - {inst.state || inst.region}
                 </option>
               ))}
             </select>
