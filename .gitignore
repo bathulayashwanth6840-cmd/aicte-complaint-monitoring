@@ -1,0 +1,62 @@
+# Node & Frontend Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Production Build Output
+dist/
+dist-ssr/
+build/
+*.local
+
+# Environment variables & Local Secrets
+.env
+.env.*
+!.env.example
+!.env.production.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+!backend/.env.production.example
+*.pem
+*.key
+*.cert
+*.crt
+
+# Python & Backend Artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+.eggs/
+
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+
+# Databases, SQLite storage & Automated Backups
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+aicte_complaints*.db
+test_*.db
+*backup*.db
+
+# Vercel & Deployment
+.vercel
+
+# Editor & System Files
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/

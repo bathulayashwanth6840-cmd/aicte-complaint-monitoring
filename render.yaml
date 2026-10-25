@@ -1,0 +1,44 @@
+services:
+  # Backend Web Service
+  - type: web
+    name: aicte-complaints-api
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    plan: starter
+    disk:
+      name: aicte-data
+      mountPath: /var/data/aicte
+      sizeGB: 1
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: DATABASE_URL
+        value: sqlite:////var/data/aicte/aicte_complaints.db
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ENABLE_DOCS
+        value: false
+      - key: SEED_DEMO_DATA_ON_STARTUP
+        value: false
+      - key: ENFORCE_HTTPS
+        value: true
+      - key: CORS_ORIGINS
+        sync: false
+
+  # Frontend Static Site
+  - type: web
+    name: aicte-complaints-portal
+    runtime: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_BASE_URL
+        sync: false
+      - key: VITE_DEMO_MODE
+        value: false

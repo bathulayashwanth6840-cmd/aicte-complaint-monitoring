@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      - APP_ENV=production
+      - HOST=0.0.0.0
+      - PORT=8000
+      - DATABASE_URL=sqlite:////var/data/aicte/aicte_complaints.db
+      - SECRET_KEY=${SECRET_KEY:-placeholder_production_secret_key_32_chars_min}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:80}
+      - ENABLE_DOCS=false
+      - SEED_DEMO_DATA_ON_STARTUP=false
+      - ENFORCE_HTTPS=false
+    volumes:
+      - aicte_db_data:/var/data/aicte
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  aicte_db_data:
+    driver: local

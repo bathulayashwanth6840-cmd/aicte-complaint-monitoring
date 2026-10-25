@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #1e293b;
+    background-color: #f8fafc;
+  }
+  
+  code, pre {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+/* Subtle, realistic LED indicator glows without neon over-saturation */
+.led-glow-red {
+  box-shadow: 0 0 12px 2px rgba(239, 68, 68, 0.45);
+}
+
+.led-glow-green {
+  box-shadow: 0 0 12px 2px rgba(16, 185, 129, 0.45);
+}
+
+.led-glow-off {
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+}
